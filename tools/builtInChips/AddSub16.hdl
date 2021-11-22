@@ -1,0 +1,15 @@
+// This file is part of home task by Vladislav Tritner & Israel Shushan
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: AddSub16
+
+/**
+ * sum 2 numbers (16 bits) and alart if there is overflow or not
+ */
+
+CHIP AddSub16 {
+    IN a[16],b[16],op;  // a,b are 2 numbers and op(if op=1 sub if op=0 add)
+    OUT out[16],overflow;     // output the number and overflow
+
+    BUILTIN AddSub16;
+}

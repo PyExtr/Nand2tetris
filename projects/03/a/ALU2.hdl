@@ -1,0 +1,74 @@
+// File name: projects/hw2/ALU2.hdl
+
+/**
+ * The ALU (Arithmetic Logic Unit).
+ * Computes one of the following functions:
+ * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * according to 6 input bits denoted zx,nx,zy,ny,f,no.
+ * In addition, the ALU computes two 1-bit outputs:
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
+ * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ */
+
+// Implementation: the ALU logic manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (op[0] == 1) set x = 0        // 16-bit constant
+// if (op[1] == 1) set x = !x       // bitwise not
+// if (op[2] == 1) set y = 0        // 16-bit constant
+// if (op[3] == 1) set y = !y       // bitwise not
+// if (op[4..5]== 0)  set out = x + y  // integer 2's complement addition
+// if (op[4..5]== 1)  set out = x - y  // integer 2's complement subtraction
+// if (op[4..5]== 2)  set out = x|y // bitwise or
+// if (op[4..5]== 3)  set out = x & y  // bitwise and
+// if (op[6] == 1) set out=out*2 (if out > 0 )  // bitwise shift left
+// if (op[7] == 1) set out = !out   // bitwise not
+// if (out == 0) set flag[0] = 1
+// if (out < 0) set flag[1] = 1
+
+CHIP ALU2 {
+    IN  
+        x[16], y[16],  // 16-bit inputs     
+		op[8]; // 8-bit input
+
+    OUT 
+        out[16], // 16-bit output
+		flags[5]; // flag
+
+    PARTS:
+
+		Mux16(a=x,b[0..15]=false,sel=op[0],out=zdx); //Zero the x
+		Not16(in=zdx,out=notx);                  //Not the x
+		Mux16(a=zdx,b=notx,sel=op[1],out=ndx);      //chose x or notx
+					// ditto for y
+		Mux16(a=y,b[0..15]=false,sel=op[2],out=zdy);  
+		Not16(in=zdy,out=noty);
+		Mux16(a=zdy,b=noty,sel=op[3],out=ndy);
+
+		AddSub16(a=ndx,b=ndy,op=0,out=xplusy); //x+y
+		AddSub16(a=ndx,b=ndy,op=1,out=xminusy); //x-y
+		And16(a=ndx,b=ndy,out=xandy);  //x&y
+		Or16(a=x,b=y,out=xory); //x|y
+		Mux4Way16(a=xplusy,b=xminusy,c=xandy,d=xory,sel=op[4..5],out=fxy);
+		
+		
+		//Mux16(a=xandy,b=xplusy,sel=f,out=fxy);  //chose function
+
+		Not16(in=fxy,out=nfxy);      //not the output or not
+		Mux16(a=fxy,b=nfxy,sel=op[7],out=oo);  //chose which
+
+		Or16Way(in=oo,out=o);  //flag[0] if out == 0
+		Not(in=o,out=flag[0]);
+
+		And16(a[0..15]=true,b=oo,out[15]=flag[1],out[0..14]=drop); //flag[1] if out <0
+
+		Or16(a=oo,b[0..15]=false,out=out); //oo=output
+	}
+
+
+
+
+
+
+
+
