@@ -1,7 +1,7 @@
 load ALU2.hdl,
 output-file ALU2.out,
 compare-to ALU2.cmp,
-output-list x%B1.16.1 y%B1.16.1 op%B1.8.1 flags%B1.5.1 out%B1.16.1;
+output-list x%B1.16.1 y%B1.16.1 op%B1.8.1 flag%B1.5.1 out%B1.16.1;
 
 
 set x %B0000000000001111,    // x = 15
@@ -49,5 +49,47 @@ output;
 set x %B1000000000000000,    // x = ?
 set y %B1000000000000000,    // y = ?
 set op %B00000000,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B00000001,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B00000010,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B00000100,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B00001000,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B00100000,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B01000000,
+eval,
+output;
+
+set x %B1000000000000000,    // x = ?
+set y %B1000000000000000,    // y = ?
+set op %B10000000,
 eval,
 output;

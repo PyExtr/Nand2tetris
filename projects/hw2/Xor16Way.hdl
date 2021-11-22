@@ -1,0 +1,29 @@
+// File name: projects/01/Xor16Way.hdl
+
+/**
+ * 16-way Xor: 
+ * out = (in[0] xor in[1] xor ... xor in[15])
+ */
+
+CHIP Xor16Way {
+    IN in[16];
+    OUT out;
+	
+	PARTS:
+	Xor(a=in[0],b=in[1],out=a);
+	Xor(a=a,b=in[2],out=b);
+	Xor(a=b,b=in[3],out=c);
+	Xor(a=c,b=in[4],out=d);
+	Xor(a=d,b=in[5],out=e);
+	Xor(a=e,b=in[6],out=f);
+	Xor(a=f,b=in[7],out=g);
+	Xor(a=g,b=in[8],out=h);
+	Xor(a=h,b=in[9],out=i);
+	Xor(a=i,b=in[10],out=j);
+	Xor(a=j,b=in[11],out=k);
+	Xor(a=k,b=in[12],out=l);
+	Xor(a=l,b=in[13],out=m);
+	Xor(a=m,b=in[14],out=n);
+	Xor(a=n,b=in[15],out=out);
+	
+}

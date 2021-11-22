@@ -1,0 +1,51 @@
+// This file is part of home task by Vladislav Tritner & Israel Shushan
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: AddSub16
+
+/**
+ * sum 2 numbers (16 bits) and alart if there is overflow or not
+ */
+
+CHIP AddSub16 {
+    IN a[16],b[16],op;  // a,b are 2 numbers and op(if op=1 sub if op=0 add)
+    OUT out[16],overflow;     // output the number and overflow
+
+    PARTS:
+	Xor	(a=a[0],b=op,out=a0);
+	Xor	(a=a[1],b=op,out=a1);
+	Xor	(a=a[2],b=op,out=a2);
+	Xor	(a=a[3],b=op,out=a3);
+	Xor	(a=a[4],b=op,out=a4);
+	Xor	(a=a[5],b=op,out=a5);
+	Xor	(a=a[6],b=op,out=a6);
+	Xor	(a=a[7],b=op,out=a7);
+	Xor	(a=a[8],b=op,out=a8);
+	Xor	(a=a[9],b=op,out=a9);
+	Xor	(a=a[10],b=op,out=a10);
+	Xor	(a=a[11],b=op,out=a11);
+	Xor	(a=a[12],b=op,out=a12);
+	Xor	(a=a[13],b=op,out=a13);
+	Xor	(a=a[14],b=op,out=a14);
+	Xor	(a=a[15],b=op,out=a15);
+	FullAdder	(a=a0,b=b[0],c=op,sum=out[0],carry=carry0);
+	FullAdder	(a=a1,b=b[1],c=carry0,sum=out[1],carry=carry1);
+	FullAdder	(a=a2,b=b[2],c=carry1,sum=out[2],carry=carry2);
+	FullAdder	(a=a3,b=b[3],c=carry2,sum=out[3],carry=carry3);
+	FullAdder	(a=a4,b=b[4],c=carry3,sum=out[4],carry=carry4	);
+	FullAdder	(a=a5,b=b[5],c=carry4,sum=out[5],carry=carry5	);
+	FullAdder	(a=a6,b=b[6],c=carry5,sum=out[6],carry=carry6	);
+	FullAdder	(a=a7,b=b[7],c=carry6,sum=out[7],carry=carry7	);
+	FullAdder	(a=a8,b=b[8],c=carry7,sum=out[8],carry=carry8	);
+	FullAdder	(a=a9,b=b[9],c=carry8,sum=out[9],carry=carry9	);
+	FullAdder	(a=a10,b=b[10],c=carry9,sum=out[10],carry=carry10);
+	FullAdder	(a=a11,b=b[11],c=carry10,sum=out[11],carry=carry11);
+	FullAdder	(a=a12,b=b[12],c=carry11,sum=out[12],carry=carry12);
+	FullAdder	(a=a13,b=b[13],c=carry12,sum=out[13],carry=carry13);
+	FullAdder	(a=a14,b=b[14],c=carry13,sum=out[14],carry=carry14);
+	FullAdder	(a=a15,b=b[15],c=carry14,sum=out[15],carry=carry15);
+	Xor			(a=carry14,	b=carry15,	out=overflow);
+	
+	
+
+}

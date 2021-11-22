@@ -4,7 +4,7 @@
  * The ALU (Arithmetic Logic Unit).
  * Computes one of the following functions:
  * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
- * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs,
  * according to 6 input bits denoted zx,nx,zy,ny,f,no.
  * In addition, the ALU computes two 1-bit outputs:
  * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
@@ -27,32 +27,29 @@
 // if (out < 0) set flag[1] = 1
 
 CHIP ALU2 {
-    IN  
-        x[16], y[16],  // 16-bit inputs     
+    IN
+        x[16], y[16],  // 16-bit inputs
 		op[8]; // 8-bit input
 
-    OUT 
+    OUT
         out[16], // 16-bit output
-		flags[5]; // flag
+		flag[5]; // flag
 
     PARTS:
 
 		Mux16(a=x,b[0..15]=false,sel=op[0],out=zdx); //Zero the x
 		Not16(in=zdx,out=notx);                  //Not the x
 		Mux16(a=zdx,b=notx,sel=op[1],out=ndx);      //chose x or notx
-					// ditto for y
-		Mux16(a=y,b[0..15]=false,sel=op[2],out=zdy);  
+		// ditto for y
+		Mux16(a=y,b[0..15]=false,sel=op[2],out=zdy);
 		Not16(in=zdy,out=noty);
 		Mux16(a=zdy,b=noty,sel=op[3],out=ndy);
 
-		AddSub16(a=ndx,b=ndy,op=0,out=xplusy); //x+y
-		AddSub16(a=ndx,b=ndy,op=1,out=xminusy); //x-y
+		AddSub16(a=ndx,b=ndy,op=false,out=xplusy,overflow=flag[4]); //x+y
+		AddSub16(a=ndx,b=ndy,op=true,out=xminusy,overflow=flag[4]); //x-y
 		And16(a=ndx,b=ndy,out=xandy);  //x&y
 		Or16(a=x,b=y,out=xory); //x|y
 		Mux4Way16(a=xplusy,b=xminusy,c=xandy,d=xory,sel=op[4..5],out=fxy);
-		
-		
-		//Mux16(a=xandy,b=xplusy,sel=f,out=fxy);  //chose function
 
 		Not16(in=fxy,out=nfxy);      //not the output or not
 		Mux16(a=fxy,b=nfxy,sel=op[7],out=oo);  //chose which
@@ -60,9 +57,17 @@ CHIP ALU2 {
 		Or16Way(in=oo,out=o);  //flag[0] if out == 0
 		Not(in=o,out=flag[0]);
 
-		And16(a[0..15]=true,b=oo,out[15]=flag[1],out[0..14]=drop); //flag[1] if out <0
+		And16(a[0..15]=true,b=oo,out[15]=flag[1],out[15]=nc); //flag[1] if out <0 nc = negativ check
 
-		Or16(a=oo,b[0..15]=false,out=out); //oo=output
+		AddSub16(a=oo,b=oo,op=false,out=xo); //leftshift
+
+		Mux16(a=xo,b=oo,sel=nc,out=co); //if out>0 then xo
+		Mux16(a=oo,b=co,sel=op[6],out=xx);
+		Xor16Way(in=xx,out=xnor);
+		
+		Not(in=xnor,out=flag[2]);
+
+		Or16(a=xx,b[0..15]=false,out=out); //oo=output
 	}
 
 
