@@ -3,10 +3,8 @@
 // by Nisan and Schocken, MIT Press.
 // File name: projects/01/Or.hdl
 
- /**
- * Or gate:
- * out = 1 if (a == 1 or b == 1)
- *       0 otherwise
+/**
+ * Or gate: out = 1 if {a==1 or b==1}, 0 otherwise
  */
 
 CHIP Or {
@@ -14,7 +12,8 @@ CHIP Or {
     OUT out;
 
     PARTS:
-    Not		(in=a,	out=c);
-	Not		(in=b,	out=d);
-    Nand	(a=c,	b=d, out=out);
+    // Put your code here:
+    Not(in=a, out=nota);
+    Not(in=b, out=notb);
+    Nand(a=nota, b=notb, out=out);
 }

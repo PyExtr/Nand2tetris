@@ -23,52 +23,68 @@
 // if (op[4..5]== 3)  set out = x & y  // bitwise and
 // if (op[6] == 1) set out=out*2 (if out > 0 )  // bitwise shift left
 // if (op[7] == 1) set out = !out   // bitwise not
-// if (out == 0) set flag[0] = 1
-// if (out < 0) set flag[1] = 1
+// if (out == 0) set flags[0] = 1
+// if (out < 0) set flags[1] = 1
 
 CHIP ALU2 {
-    IN
-        x[16], y[16],  // 16-bit inputs
-		op[8]; // 8-bit input
+    IN  
+        x[16], y[16], // 16-bit inputs  
+		op[8];  // 8-bit input      
 
-    OUT
+
+    OUT 
         out[16], // 16-bit output
-		flag[5]; // flag
+		flags[5]; // flags
+        
 
     PARTS:
+	
+	Mux16(a=x, b=false, sel=op[0], out=zdx); //Zero the x
+    Not16(in=zdx, out=notx);                        //Not the x
+    Mux16(a=zdx, b=notx, sel=op[1], out=ndx);       //chose x or !x
+	// ditto for y
+    Mux16(a=y, b=false,sel=op[2], out=zdy);			//Zero the y
+    Not16(in=zdy, out=noty);                        //Not the y
+    Mux16(a=zdy, b=noty, sel=op[3], out=ndy);       //chose y or !y
+	
+	AddSub16(a=ndx, b=ndy, op=false, out=xplusy, overflow=of1, carry=c1); //x+y
+	AddSub16(a=ndx, b=ndy, op=true, out=xminusy, overflow=of2, carry=c2);  //x-y
+	
+	Mux(a=of1, b=of2, sel=op[4], out=of3);	        //Overflow check 
+	Mux(a=of3, b=false, sel=op[5], out=ofFinal);    //if op[5]==0
+	Mux(a=c1, b=c2, sel=op[4], out=c45);			//Carry check
+	Mux(a=c45, b=false, sel=op[5], out=carryFinal); // if op[5]==0
+	
+	Or16(a=ndx, b=ndy, out=xory); 	//x|y
+	And16(a=ndx, b=ndy, out=xandy); //x&y
+	
+	Mux4Way16(a=xplusy, b=xminusy, c=xory, d=xandy, sel=op[4..5], out=fxy, out[15]=fxyMSB);
+	
+	AddSub16(a=fxy, b=fxy, op=false, out=shiftxy,overflow=shiftof, carry=shiftc); //leftshift
+	
+	Mux16(a=shiftxy, b=fxy, sel=fxyMSB, out=xyaftershift); //if MSB
+	Mux16(a=fxy, b=xyaftershift, sel=op[6], out=xyafterop6); //if  op[6]
+	Mux(a=shiftc, b=false, sel=fxyMSB, out=shiftcfinal); //if carry for leftshift
+	
+	Not16(in=xyafterop6, out=nxyafterop6); //for op[7]
+    Mux16(a=xyafterop6, b=nxyafterop6, sel=op[7], out=out, out=outflags, out[15]=MSB);
+	
+	
+	//Flags
+	Or16Way(in=outflags,out=o);  //flags[0] if out == 0
+	Not(in=o,out=flags[0]);
+	
+	And(a=MSB, b=true, out=flags[1]); //flags[1]
+	
+	Xor16Way(in=outflags,out=xnor);
+	Not(in=xnor,out=flags[2]);        //flags[2]
+	
 
-		Mux16(a=x,b[0..15]=false,sel=op[0],out=zdx); //Zero the x
-		Not16(in=zdx,out=notx);                  //Not the x
-		Mux16(a=zdx,b=notx,sel=op[1],out=ndx);      //chose x or notx
-		// ditto for y
-		Mux16(a=y,b[0..15]=false,sel=op[2],out=zdy);
-		Not16(in=zdy,out=noty);
-		Mux16(a=zdy,b=noty,sel=op[3],out=ndy);
-
-		AddSub16(a=ndx,b=ndy,op=false,out=xplusy,overflow=flag[4]); //x+y
-		AddSub16(a=ndx,b=ndy,op=true,out=xminusy,overflow=flag[4]); //x-y
-		And16(a=ndx,b=ndy,out=xandy);  //x&y
-		Or16(a=x,b=y,out=xory); //x|y
-		Mux4Way16(a=xplusy,b=xminusy,c=xandy,d=xory,sel=op[4..5],out=fxy);
-
-		Not16(in=fxy,out=nfxy);      //not the output or not
-		Mux16(a=fxy,b=nfxy,sel=op[7],out=oo);  //chose which
-
-		Or16Way(in=oo,out=o);  //flag[0] if out == 0
-		Not(in=o,out=flag[0]);
-
-		And16(a[0..15]=true,b=oo,out[15]=flag[1],out[15]=nc); //flag[1] if out <0 nc = negativ check
-
-		AddSub16(a=oo,b=oo,op=false,out=xo); //leftshift
-
-		Mux16(a=xo,b=oo,sel=nc,out=co); //if out>0 then xo
-		Mux16(a=oo,b=co,sel=op[6],out=xx);
-		Xor16Way(in=xx,out=xnor);
-		
-		Not(in=xnor,out=flag[2]);
-
-		Or16(a=xx,b[0..15]=false,out=out); //oo=output
-	}
+	Or(a=carryFinal, b=shiftcfinal, out=flags[3]);  //flags[3]
+	
+	Or(a=ofFinal, b=false, out=flags[4]);           //flags[4]
+	
+}
 
 
 
